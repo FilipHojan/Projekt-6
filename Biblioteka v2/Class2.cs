@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Biblioteka_v2
 {
-    class Class2
+    public class Class2
     {
         public int ID { get; set; }
         public string tytul { get; set; }

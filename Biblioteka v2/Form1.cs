@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Serialization;
 
 namespace Biblioteka_v2
 {
@@ -14,8 +16,8 @@ namespace Biblioteka_v2
     {
 
         public DataTable table = new DataTable("table");
-        public List<Class1> lista = new List<Class1>();
-        Class1 books = new Class1();
+        public List<Class2> lista = new List<Class2>();
+        Class2 books = new Class2();
 
         XmlSerializer serializer = new XmlSerializer(typeof(List<Class1>));
 
@@ -37,24 +39,36 @@ namespace Biblioteka_v2
 
         private void button3_Click(object sender, EventArgs e)
         {
-            string nazwaPliku = "Dane.csv";
-            string savePath = "";
-
-            SaveFileDialog sf = new SaveFileDialog();
-            sf.Filter = "CSV files (*.csv)|*.csv";
-            sf.FileName = nazwaPliku;
-
-            if (sf.ShowDialog() == DialogResult.OK)
+            string[] text = System.IO.File.ReadAllLines("C:\\Users\\Filip\\Desktop\\dane.csv");
+            string[] data_col = null;
+            int x = 0;
+            foreach (string line in text)
             {
-                savePath = Path.GetDirectoryName(sf.FileName);
+                data_col = line.Split(',');
+                if (x == 0)
+                {
+                    for (int i = 0; i <= data_col.Count() - 1; i++)
+                    {
+                        table.Columns.Add(data_col[i]);
+                    }
+                    x++;
+                }
+                else
+                {
+                    table.Rows.Add(data_col);
+                }
             }
-            string path = Path.Combine(savePath, nazwaPliku);
+            dataGridView1.DataSource = table;
+            this.Controls.Add(dataGridView1);
+        }
 
-            StreamWriter writer = new StreamWriter(path, true);
+        private void button4_Click(object sender, EventArgs e)
+        {
+            StreamWriter writer = new StreamWriter("C:\\Users\\Filip\\Desktop\\dane.csv", true);
             if (writer != null)
             {
                 writer.WriteLine(@"ID;tytul;autor;wydawnictwo;rok");
-                foreach (Class1 books in lista)
+                foreach (Class2 books in lista)
                 {
                     writer.WriteLine(String.Format(@"{0};{1};", books.ID, books.tytul, books.autor, books.wydawnictwo, books.rok));
                 }
@@ -62,33 +76,24 @@ namespace Biblioteka_v2
             }
         }
 
-        private void button4_Click(object sender, EventArgs e)
-        {
-            string plik = textBox1.Text;
-            if (plik.Contains(".csv") == false)
-            {
-                var reader = new StreamReader(plik);
-                lista = (List<Class1>)serializer.Deserialize(reader);
-                reader.Close();
-                dataGridView1.DataSource = lista;
-            }
-            else
-            {
-                MessageBox.Show("Wczytany plik ma rozszerzenie .csv");
-            }
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
-
+            var writer = new StreamWriter("C:\\Users\\Filip\\Desktop\\dane.xml");
+            serializer.Serialize(writer, lista);
+            writer.Close();
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-
+            var reader = new StreamReader("C:\\Users\\Filip\\Desktop\\dane.xml");
+            lista = (List<Class2>)serializer.Deserialize(reader);
+            reader.Close();
+            dataGridView1.DataSource = lista;
         }
 
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
 
-
+        }
     }
 }
